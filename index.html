@@ -6,13 +6,13 @@
 <title>SaathWatch - Door rehke, saath dekho</title>
 <style>
   :root {
-    --bg: #06060e; --card: rgba(255,255,255,0.06); --border: rgba(139,92,246,0.35);
-    --accent: #8b5cf6; --accent2: #6366f1; --green: #22c55e; --red: #ef4444;
-    --text: #e5e7eb; --muted: #9ca3af;
+    --bg: #141414; --card: rgba(255,255,255,0.05); --border: #2f2f2f;
+    --accent: #e50914; --accent2: #b00610; --green: #22c55e; --red: #ef4444;
+    --text: #f5f5f5; --muted: #b3b3b3;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: radial-gradient(1200px 600px at 50% -10%, rgba(99,102,241,0.25), transparent), var(--bg);
+    background: var(--bg);
     color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     min-height: 100vh; padding: 16px;
   }
@@ -31,8 +31,8 @@
     display: flex; align-items: center; justify-content: center; gap: 8px;
     width: 100%; padding: 16px; border: none; border-radius: 14px;
     font-size: 1.05rem; font-weight: 700; cursor: pointer; color: white;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    margin-bottom: 10px; box-shadow: 0 4px 20px rgba(139,92,246,0.35);
+    background: var(--accent);
+    margin-bottom: 10px; box-shadow: none;
     text-decoration: none; text-align: center; font-family: inherit;
   }
   .btn.secondary { background: var(--card); border: 1px solid var(--border); box-shadow: none; }
@@ -68,19 +68,77 @@
   .hidden { display: none !important; }
   .linkrow { display: flex; gap: 8px; }
   .linkrow .btn { margin-bottom: 0; font-size: 0.9rem; padding: 12px; }
+  #video-container { position: relative; }
+  #sub-overlay {
+    position: absolute; bottom: 8%; left: 5%; width: 90%; text-align: center;
+    pointer-events: none; font-size: 1.05rem; line-height: 1.35; color: #fff;
+    text-shadow: 0 1px 3px #000, 0 0 8px #000, 0 0 2px #000; white-space: pre-line;
+    font-weight: 600;
+  }
+  .player-wrap { position: relative; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+  .player-wrap video { margin-bottom: 0; display: block; }
+  .player-wrap:fullscreen { border-radius: 0; display: flex; align-items: center; justify-content: center; }
+  .player-wrap:fullscreen video { max-height: 100vh; }
+  .react-strip {
+    display: flex; flex-direction: row; gap: 6px; z-index: 5;
+    padding: 6px 8px; background: #000;
+  }
+  .react-strip button {
+    font-size: 1.1rem; background: rgba(20,20,20,0.65); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50%; width: 40px; height: 40px; cursor: pointer; color: #fff;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  }
+  .react-strip button:active { transform: scale(1.15); }
+  @media (max-width: 340px) {
+    .react-strip { gap: 5px; left: 6px; }
+    .react-strip button { width: 34px; height: 34px; font-size: 0.95rem; }
+  }
+  .player-wrap:fullscreen .react-strip {
+    position: absolute; flex-direction: column; left: auto; right: 12px; bottom: 110px; top: auto;
+    gap: 10px; padding: 0; background: none;
+  }
+  .player-wrap:fullscreen .react-strip button { width: 48px; height: 48px; font-size: 1.3rem; }
+  .player-wrap:fullscreen .fs-btn { top: auto; bottom: 16px; right: 12px; }
+  .fs-btn {
+    position: absolute; right: 6px; top: 6px; z-index: 5; background: rgba(20,20,20,0.65);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .float-emoji {
+    position: absolute; bottom: 26%; font-size: 2rem;
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; z-index: 6; pointer-events: none;
+    animation: floatUp 4s ease-out forwards;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    8% { opacity: 1; transform: translateY(-12px) scale(1.15); }
+    100% { transform: translateY(-175px) translateX(-16px) scale(1); opacity: 0; }
+  }
+  .chat-head { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; }
+  .chat-msgs { max-height: 170px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+  .chat-msg { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 7px 10px; font-size: 0.9rem; max-width: 85%; word-break: break-word; }
+  .chat-msg.mine { align-self: flex-end; background: rgba(229,9,20,0.4); }
+  .chat-who { font-size: 0.68rem; color: var(--muted); margin-bottom: 2px; }
+  .chat-row { display: flex; gap: 8px; align-items: center; }
+  .chat-row input { flex: 1; margin-bottom: 0 !important; text-transform: none !important; letter-spacing: 0 !important; text-align: left !important; font-size: 1rem !important; padding: 12px !important; }
+  .chat-row .btn { width: auto; padding: 12px 16px; margin-bottom: 0; }
+  #emoji-picker { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; background: #1c1c1c; border: 1px solid #333; border-radius: 12px; padding: 8px; margin-bottom: 8px; }
+  #emoji-picker button { font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; font-size: 1.35rem; background: none; border: none; padding: 5px; cursor: pointer; }
+  .badge { background: var(--accent); color: #fff; border-radius: 999px; font-size: 0.75rem; padding: 2px 8px; margin-right: 6px; }
   #log-host, #log-guest { font-size: 0.75rem; color: var(--muted); max-height: 120px; overflow-y: auto; margin-top: 8px; font-family: monospace; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>SaathWatch</h1>
-  <p class="tag">Door rehke, saath dekho. File sirf host ke phone mein rehti hai.</p>
+  <p class="tag">Door rehke, saath dekho. MP4 aur MKV, file sirf host ke phone mein rehti hai.</p>
 
   <div id="screen-home">
     <div class="card">
       <button class="btn" id="btn-host"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M10 8.5l5 3-5 3z" fill="currentColor" stroke="none"/></svg> Host karo (video tumhare phone pe)</button>
       <button class="btn secondary" id="btn-join"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg> Join karo (code-key se)</button>
-      <input type="file" id="file-input" accept="video/*,.mp4,.m4v,.webm,.mov" class="hidden">
+      <input type="file" id="file-input" accept="video/*,.mp4,.m4v,.webm,.mov,.mkv" class="hidden">
     </div>
     <div class="note">
       Video kisi server pe upload <b>nahi</b> hoti - host ke phone se encrypted P2P stream
@@ -102,7 +160,9 @@
       <button class="btn danger" id="btn-leave-host" style="margin-top:10px;margin-bottom:0;">Session band karo</button>
     </div>
     <div class="card">
-      <video id="host-video" controls playsinline></video>
+      <div class="player-wrap" id="host-player-wrap">
+        <video id="host-video" controls playsinline controlslist="nofullscreen"></video>
+      </div>
       <div class="status" id="host-status">Shuru ho raha hai...</div>
       <div class="warn">Ye tab khula rakho aur screen on rakho - band hui toh stream ruk jayegi. Play/pause/seek sab host ke haath mein hai.</div>
     </div>
@@ -116,7 +176,7 @@
       <button class="btn" id="btn-join-go">Join karo</button>
     </div>
     <div class="card hidden" id="guest-player-card">
-      <div id="video-container"></div>
+      <div id="video-container" class="player-wrap"><div id="sub-overlay"></div></div>
       <div class="status" id="guest-status">Host ka intezaar...</div>
       <div class="err hidden" id="guest-error"></div>
       <div class="linkrow hidden" id="guest-error-actions" style="margin-top:10px;">
@@ -127,10 +187,24 @@
     </div>
     <div id="log-guest"></div>
   </div>
+
+  <div id="chat-card" class="card hidden">
+    <div class="chat-head" id="chat-head"><span>Chat</span><span><span class="badge hidden" id="chat-badge">0</span><span id="chat-arrow">&#9660;</span></span></div>
+    <div class="chat-body" id="chat-body">
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div id="emoji-picker" class="hidden"></div>
+      <div class="chat-row">
+        <button class="btn secondary" id="chat-emoji-btn">&#128512;</button>
+        <input type="text" id="chat-input" maxlength="500" placeholder="Message likho..." autocomplete="off">
+        <button class="btn" id="chat-send">Send</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="module">
 import {joinRoom} from './trystero-mqtt.js';
+import {MkvEngine, scanMkvSubtitles as scanMkvSubtitlesPub} from './mkv-engine.js';
 
 const APP_ID = 'saathwatch-dv-v2';
 const RTC_CONFIG = {
@@ -145,7 +219,7 @@ const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CODE_KEY_RE = /^[A-HJ-NP-Z2-9]{6}-[A-HJ-NP-Z2-9]{12}$/;
 
 const $ = id => document.getElementById(id);
-const state = {mode: null, code: null, key: null, room: null, stream: null, peers: 0, timers: []};
+const state = {mode: null, code: null, key: null, room: null, stream: null, peers: 0, timers: [], cues: null, mkvEngine: null, sendSubs: null, sendChat: null, sendReact: null};
 window.__sw = state;
 
 function log(screen, msg) {
@@ -185,6 +259,16 @@ function fmtSize(b) {
 }
 
 function resetToHome() {
+  if (state.mkvEngine) { try { state.mkvEngine.destroy(); } catch {} state.mkvEngine = null; }
+  state.cues = null;
+  state.sendSubs = null;
+  state.sendChat = null;
+  state.sendReact = null;
+  $('chat-card').classList.add('hidden');
+  $('chat-msgs').textContent = '';
+  $('chat-badge').classList.add('hidden');
+  $('chat-badge').textContent = '0';
+  const ov = $('sub-overlay'); if (ov) ov.textContent = '';
   clearTimers();
   if (state.room) { try { state.room.leave(); } catch {} }
   if (state.stream) { try { state.stream.getTracks().forEach(t => t.stop()); } catch {} }
@@ -207,8 +291,8 @@ function resetToHome() {
 async function startHost(file) {
   if (state.mode === 'host') return;
   const ext = (file.name.split('.').pop() || '').toLowerCase();
-  if (['mkv', 'avi', 'flv', 'wmv', 'ts'].includes(ext)) {
-    alert('Ye file browser mein nahi chal sakti (.' + ext + ').\n\nMP4 (.mp4) wali file chuno - zyada tar phone videos MP4 hi hoti hain.\nMKV anime ke liye ye version abhi support nahi karta.');
+  if (['avi', 'flv', 'wmv', 'ts'].includes(ext)) {
+    alert('Ye file browser mein nahi chal sakti (.' + ext + ').\n\nMP4, WebM ya MKV file chuno - zyada tar videos yehi hoti hain.');
     return;
   }
   const v = $('host-video');
@@ -230,18 +314,89 @@ async function startHost(file) {
   };
   $('btn-wa').href = 'https://wa.me/?text=' + encodeURIComponent('SaathWatch pe movie dekh mere saath! Ye link kholo: ' + link);
 
-  v.src = URL.createObjectURL(file);
-  v.addEventListener('error', () => {
-    setStatus('host-status', 'Video decode nahi ho paya - file corrupt ya unsupported codec hai. MP4 (H.264) file try karo.');
-    log('host', 'Video decode error');
-  }, {once: true});
+  if (ext === 'mkv') {
+    setStatus('host-status', 'MKV taiyaar ho rahi hai... badi file mein 10-30 second lag sakte hain.');
+    const startEngine = async () => {
+      const engine = new MkvEngine(file, v, {
+        onError: e => { setStatus('host-status', 'MKV error: ' + e.message); log('host', 'MKV error: ' + e.message); },
+        onCues: cues => { state.cues = cues; setupHostSubs(v, cues); log('host', 'Subtitles mile: ' + cues.length + ' cues'); broadcastCues(); }
+      });
+      window.__mkvDbg = engine;
+      await engine.init();
+      state.mkvEngine = engine;
+      log('host', 'MKV engine ready: ' + engine.mime);
+    };
+    let nativeOk = false;
+    try {
+      v.src = URL.createObjectURL(file);
+      await new Promise((res, rej) => {
+        const to = setTimeout(() => rej(new Error('native timeout')), 10000);
+        v.addEventListener('canplay', () => { clearTimeout(to); res(); }, {once: true});
+        v.addEventListener('error', () => { clearTimeout(to); rej(new Error('native decode error')); }, {once: true});
+      });
+      nativeOk = true;
+      log('host', 'MKV native playback OK');
+    } catch (e) {
+      log('host', 'Native MKV nahi chali (' + e.message + ') - engine try kar rahe');
+      v.removeAttribute('src'); v.load();
+    }
+    if (!nativeOk) {
+      try { await startEngine(); }
+      catch (e) {
+        alert('MKV nahi chal payi: ' + e.message);
+        resetToHome();
+        return;
+      }
+    } else {
+      scanMkvSubtitlesPub(file).then(cues => {
+        if (!cues.length || state.mode !== 'host') return;
+        state.cues = cues;
+        setupHostSubs(v, cues);
+        log('host', 'Subtitles mile: ' + cues.length + ' cues');
+        broadcastCues();
+      }).catch(() => {});
+      setTimeout(async () => {
+        try {
+          if (state.mode !== 'host' || v.paused) return;
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          await ctx.resume();
+          const src = ctx.createMediaElementSource(v);
+          const an = ctx.createAnalyser();
+          src.connect(an);
+          const buf = new Float32Array(an.fftSize);
+          let peak = 0;
+          for (let i = 0; i < 15; i++) {
+            await new Promise(r => setTimeout(r, 100));
+            an.getFloatTimeDomainData(buf);
+            let rms = 0; for (const x of buf) rms += x * x;
+            peak = Math.max(peak, Math.sqrt(rms / buf.length));
+          }
+          src.disconnect(); ctx.close();
+          if (peak < 0.0005) {
+            setStatus('host-status', 'Video chal raha hai par AWAAZ nahi - is MKV ka audio codec browser support nahi karta (aksar AC3/DTS). Dusri file ya AAC audio wali MKV try karo.');
+            log('host', 'WARN: native MKV audio silent (peak ' + peak.toFixed(5) + ')');
+          }
+        } catch {}
+      }, 4000);
+    }
+  } else {
+    v.src = URL.createObjectURL(file);
+    v.addEventListener('error', () => {
+      setStatus('host-status', 'Video decode nahi ho paya - file corrupt ya unsupported codec hai. MP4 (H.264) file try karo.');
+      log('host', 'Video decode error');
+    }, {once: true});
+  }
 
   const room = joinRoom({appId: APP_ID, password: state.key, rtcConfig: RTC_CONFIG}, state.code);
   state.room = room;
   const [sendCtrl] = room.makeAction('ctrl');
   const [, onHello] = room.makeAction('hello');
   const [sendHello] = room.makeAction('hello');
+  const [sendSubs] = room.makeAction('subs');
+  state.sendSubs = sendSubs;
   window.__sw.sendCtrl = sendCtrl;
+  wireRoomExtras(room);
+  $('chat-card').classList.remove('hidden');
 
   const sentTo = new Set();
   const sendStream = peerId => {
@@ -281,7 +436,7 @@ async function startHost(file) {
     if (state.peers) setStatusParts('host-status', [{b: String(state.peers) + ' viewer'}, ' abhi bhi juda hai']);
     else setStatus('host-status', 'Viewer chala gaya - link wapas share karke bula sakte ho.');
   });
-  onHello((d, peerId) => sendStream(peerId));
+  onHello((d, peerId) => { sendStream(peerId); broadcastCues(peerId); });
 
   const sendState = () => sendCtrl({paused: v.paused, time: v.currentTime, rate: v.playbackRate, at: Date.now()});
   v.addEventListener('play', sendState);
@@ -307,6 +462,132 @@ async function startHost(file) {
     log('host', 'Wake lock on');
   } catch { log('host', 'Wake lock nahi mila - screen on rakhna'); }
 }
+
+function setupHostSubs(v, cues) {
+  try {
+    const track = v.addTextTrack('subtitles', 'Subs', 'hi');
+    track.mode = 'showing';
+    for (const c of cues) { try { track.addCue(new VTTCue(c.start, c.end, c.text)); } catch {} }
+  } catch (e) { log('host', 'subtitle track error: ' + e.message); }
+}
+function broadcastCues(peerId) {
+  if (!state.cues || !state.cues.length || !state.sendSubs || !state.room) return;
+  const json = JSON.stringify(state.cues);
+  const CH = 48000;
+  const n = Math.ceil(json.length / CH);
+  const peers = peerId ? [peerId] : Object.keys(state.room.getPeers());
+  for (const pid of peers) {
+    for (let i = 0; i < n; i++) {
+      try { state.sendSubs({i, n, part: json.slice(i * CH, (i + 1) * CH)}, pid); } catch {}
+    }
+  }
+  log('host', 'Subtitles bheje (' + n + ' parts) -> ' + peers.length + ' peer(s)');
+}
+
+/* ---------------- CHAT + REACTIONS + FULLSCREEN ---------------- */
+
+const REACTIONS = ['\u2764\uFE0F', '\uD83D\uDE02', '\uD83D\uDE2E', '\uD83D\uDC4F', '\uD83D\uDD25'];
+const PICKER_EMOJIS = ['\uD83D\uDE00','\uD83D\uDE02','\uD83D\uDE0D','\uD83D\uDE18','\uD83D\uDE2D','\uD83D\uDE2E','\uD83D\uDE21','\uD83D\uDE31','\uD83D\uDE4F','\uD83D\uDC4F','\uD83D\uDC4D','\uD83D\uDC4E','\u2764\uFE0F','\uD83D\uDD25','\uD83C\uDF7F','\uD83C\uDF89','\uD83D\uDE34','\uD83E\uDD2F','\uD83D\uDC40','\uD83D\uDE4C','\uD83D\uDE0E','\uD83E\uDD73','\uD83D\uDCA5','\uD83D\uDE4C'];
+
+function spawnFloat(wrap, emoji) {
+  if (!wrap) return;
+  const s = document.createElement('span');
+  s.className = 'float-emoji';
+  s.textContent = emoji;
+  s.style.right = (6 + Math.random() * 22) + '%';
+  wrap.appendChild(s);
+  setTimeout(() => s.remove(), 4200);
+}
+
+function buildReactionStrip(wrap) {
+  if (!wrap) return;
+  const strip = document.createElement('div');
+  strip.className = 'react-strip';
+  for (const e of REACTIONS) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = e;
+    b.onclick = () => {
+      spawnFloat(wrap, e);
+      if (state.sendReact) { try { state.sendReact({e}); } catch {} }
+    };
+    strip.appendChild(b);
+  }
+  wrap.appendChild(strip);
+  const fsBtn = document.createElement('button');
+  fsBtn.type = 'button';
+  fsBtn.className = 'fs-btn';
+  fsBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+  fsBtn.onclick = () => {
+    if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); }
+    else if (wrap.requestFullscreen) { wrap.requestFullscreen().catch(() => {}); }
+    else if (wrap.webkitRequestFullscreen) { wrap.webkitRequestFullscreen(); }
+  };
+  wrap.appendChild(fsBtn);
+}
+
+function chatAddMsg(text, mine) {
+  const box = $('chat-msgs');
+  const div = document.createElement('div');
+  div.className = 'chat-msg' + (mine ? ' mine' : '');
+  const who = document.createElement('div');
+  who.className = 'chat-who';
+  who.textContent = mine ? 'Tum' : 'Saathi';
+  const body = document.createElement('div');
+  body.textContent = text;
+  div.append(who, body);
+  box.appendChild(div);
+  while (box.children.length > 200) box.firstChild.remove();
+  box.scrollTop = box.scrollHeight;
+  if ($('chat-body').classList.contains('hidden')) {
+    const b = $('chat-badge');
+    b.textContent = String((parseInt(b.textContent) || 0) + 1);
+    b.classList.remove('hidden');
+  }
+}
+
+function wireRoomExtras(room) {
+  const [sendChat, onChat] = room.makeAction('chat');
+  const [sendReact, onReact] = room.makeAction('react');
+  state.sendChat = sendChat;
+  state.sendReact = sendReact;
+  onChat(d => { if (d && typeof d.t === 'string' && d.t.trim()) chatAddMsg(d.t.slice(0, 500), false); });
+  onReact(d => {
+    if (d && REACTIONS.includes(d.e)) {
+      spawnFloat(state.mode === 'host' ? $('host-player-wrap') : $('video-container'), d.e);
+    }
+  });
+}
+
+/* chat UI wiring (once) */
+$('chat-head').onclick = () => {
+  const body = $('chat-body');
+  const nowHidden = body.classList.toggle('hidden');
+  $('chat-arrow').textContent = nowHidden ? '\u25B2' : '\u25BC';
+  if (!nowHidden) { $('chat-badge').classList.add('hidden'); $('chat-badge').textContent = '0'; }
+};
+$('chat-send').onclick = () => {
+  const inp = $('chat-input');
+  const t = inp.value.trim();
+  if (!t || !state.sendChat) return;
+  try { state.sendChat({t}); } catch {}
+  chatAddMsg(t, true);
+  inp.value = '';
+};
+$('chat-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('chat-send').click(); });
+$('chat-emoji-btn').onclick = () => $('emoji-picker').classList.toggle('hidden');
+{
+  const picker = $('emoji-picker');
+  for (const e of PICKER_EMOJIS) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = e;
+    b.onclick = () => { const inp = $('chat-input'); inp.value += e; inp.focus(); };
+    picker.appendChild(b);
+  }
+}
+buildReactionStrip($('host-player-wrap'));
+buildReactionStrip($('video-container'));
 
 /* ---------------- GUEST ---------------- */
 
@@ -357,7 +638,44 @@ function startGuest(codeKey) {
 
   const [sendHello] = room.makeAction('hello');
   const [, onCtrl] = room.makeAction('ctrl');
+  const [, onSubs] = room.makeAction('subs');
+  wireRoomExtras(room);
+  $('chat-card').classList.remove('hidden');
   let streamHandled = false;
+  const subParts = {};
+  onSubs(d => {
+    if (!d || typeof d.i !== 'number') return;
+    const buf = subParts[d.n] || (subParts[d.n] = {parts: [], got: 0});
+    if (!buf.parts[d.i]) { buf.parts[d.i] = d.part; buf.got++; }
+    if (buf.got === d.n) {
+      try {
+        state.cues = JSON.parse(buf.parts.join(''));
+        delete subParts[d.n];
+        log('guest', 'Subtitles mile: ' + state.cues.length + ' cues');
+        updateSubOverlay();
+      } catch (e) { log('guest', 'subtitle parse error'); }
+    }
+  });
+  let lastCtrl = null;
+  function estHostTime() {
+    if (!lastCtrl) return null;
+    return lastCtrl.time + (lastCtrl.paused ? 0 : (Date.now() - lastCtrl.at) / 1000 * (lastCtrl.rate || 1));
+  }
+  function updateSubOverlay() {
+    const ov = $('sub-overlay');
+    if (!ov) return;
+    if (!state.cues || !state.cues.length) { ov.textContent = ''; return; }
+    const t = estHostTime();
+    if (t == null) { ov.textContent = ''; return; }
+    let lo = 0, hi = state.cues.length - 1, ans = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (state.cues[mid].start <= t) { ans = mid; lo = mid + 1; } else hi = mid - 1;
+    }
+    const c = ans >= 0 ? state.cues[ans] : null;
+    ov.textContent = (c && c.end >= t) ? c.text : '';
+  }
+  addTimer(setInterval(updateSubOverlay, 500));
 
   room.onPeerJoin(peerId => {
     log('guest', 'Peer mila: ' + peerId.slice(0, 6));
@@ -374,12 +692,17 @@ function startGuest(codeKey) {
     streamHandled = true;
     log('guest', 'Stream mili! tracks=' + stream.getTracks().length);
     const container = $('video-container');
-    container.textContent = '';
+    const oldV = container.querySelector('video');
+    if (oldV) oldV.remove();
+    container.querySelectorAll('.float-emoji').forEach(e => e.remove());
     const video = document.createElement('video');
+    video.style.position = 'relative';
+    video.style.zIndex = '1';
+    container.prepend(video);
     video.controls = true;
     video.playsInline = true;
+    video.setAttribute('controlslist', 'nofullscreen');
     video.srcObject = stream;
-    container.appendChild(video);
     window.__sw.video = video;
     stream.getTracks().forEach(t => t.addEventListener('ended', () => {
       if (state.mode === 'guest') guestFail('Stream band ho gayi (track ended). Retry dabao.');
@@ -394,6 +717,8 @@ function startGuest(codeKey) {
   });
 
   onCtrl(s => {
+    lastCtrl = s;
+    updateSubOverlay();
     const video = window.__sw.video;
     if (s.paused) {
       if (video && !video.paused) video.pause();
