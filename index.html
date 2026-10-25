@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SaathWatch - Door rehke, saath dekho</title>
+<style>
+  :root {
+    --bg: #06060e; --card: rgba(255,255,255,0.06); --border: rgba(139,92,246,0.35);
+    --accent: #8b5cf6; --accent2: #6366f1; --green: #22c55e; --red: #ef4444;
+    --text: #e5e7eb; --muted: #9ca3af;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, rgba(99,102,241,0.25), transparent), var(--bg);
+    color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh; padding: 16px;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  h1 {
+    font-size: 1.7rem; text-align: center; margin: 18px 0 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tag { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 18px; margin-bottom: 14px; backdrop-filter: blur(8px);
+  }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 16px; border: none; border-radius: 14px;
+    font-size: 1.05rem; font-weight: 700; cursor: pointer; color: white;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    margin-bottom: 10px; box-shadow: 0 4px 20px rgba(139,92,246,0.35);
+    text-decoration: none; text-align: center; font-family: inherit;
+  }
+  .btn.secondary { background: var(--card); border: 1px solid var(--border); box-shadow: none; }
+  .btn.danger { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.5); box-shadow: none; font-size: 0.9rem; padding: 12px; }
+  .btn:active { transform: scale(0.98); }
+  .btn svg { flex: 0 0 auto; }
+  input[type=text] {
+    width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border);
+    background: rgba(0,0,0,0.4); color: var(--text); font-size: 1.05rem;
+    text-align: center; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
+    font-family: inherit;
+  }
+  video { width: 100%; border-radius: 12px; background: #000; margin-bottom: 10px; }
+  .status { font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
+  .status b { color: var(--text); }
+  .code-box {
+    font-size: 1.08rem; font-weight: 800; letter-spacing: 1px; text-align: center;
+    padding: 14px 10px; border: 1px dashed var(--border); border-radius: 12px;
+    color: var(--accent); margin: 8px 0; word-break: break-all;
+  }
+  .warn {
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4);
+    border-radius: 12px; padding: 12px; font-size: 0.9rem; margin-top: 10px;
+  }
+  .note {
+    background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 12px; padding: 12px; font-size: 0.85rem; color: var(--muted);
+  }
+  .err {
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.5);
+    border-radius: 12px; padding: 12px; font-size: 0.9rem; color: #fca5a5; margin-bottom: 10px;
+  }
+  .hidden { display: none !important; }
+  .linkrow { display: flex; gap: 8px; }
+  .linkrow .btn { margin-bottom: 0; font-size: 0.9rem; padding: 12px; }
+  #log-host, #log-guest { font-size: 0.75rem; color: var(--muted); max-height: 120px; overflow-y: auto; margin-top: 8px; font-family: monospace; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>SaathWatch</h1>
+  <p class="tag">Door rehke, saath dekho. File sirf host ke phone mein rehti hai.</p>
+
+  <div id="screen-home">
+    <div class="card">
+      <button class="btn" id="btn-host"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M10 8.5l5 3-5 3z" fill="currentColor" stroke="none"/></svg> Host karo (video tumhare phone pe)</button>
+      <button class="btn secondary" id="btn-join"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg> Join karo (code-key se)</button>
+      <input type="file" id="file-input" accept="video/*,.mp4,.m4v,.webm,.mov" class="hidden">
+    </div>
+    <div class="note">
+      Video kisi server pe upload <b>nahi</b> hoti - host ke phone se encrypted P2P stream
+      seedha doosre phone tak jaati hai. Join karne ke liye poora room link ya code-key chahiye.
+      Jodne ke liye public MQTT relay use hota hai (use sirf encrypted messages aur connection
+      metadata dikhta hai); agar seedha P2P rasta na bane toh ek TURN relay encrypted media
+      forward karta hai.
+    </div>
+  </div>
+
+  <div id="screen-host" class="hidden">
+    <div class="card">
+      <div class="status">Poora code-key (ya neeche se link bhejo):</div>
+      <div class="code-box" id="host-code">------</div>
+      <div class="linkrow">
+        <button class="btn" id="btn-copy"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Link copy</button>
+        <a class="btn" id="btn-wa" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 8.5-8.5 8.38 8.38 0 0 1 8.5 8.5z"/></svg> WhatsApp pe bhejo</a>
+      </div>
+      <button class="btn danger" id="btn-leave-host" style="margin-top:10px;margin-bottom:0;">Session band karo</button>
+    </div>
+    <div class="card">
+      <video id="host-video" controls playsinline></video>
+      <div class="status" id="host-status">Shuru ho raha hai...</div>
+      <div class="warn">Ye tab khula rakho aur screen on rakho - band hui toh stream ruk jayegi. Play/pause/seek sab host ke haath mein hai.</div>
+    </div>
+    <div id="log-host"></div>
+  </div>
+
+  <div id="screen-guest" class="hidden">
+    <div class="card" id="guest-entry">
+      <div class="err hidden" id="guest-join-error"></div>
+      <input type="text" id="code-input" maxlength="19" placeholder="CODE-KEY (jaise AB12CD-EF34GH56JK78)" autocomplete="off">
+      <button class="btn" id="btn-join-go">Join karo</button>
+    </div>
+    <div class="card hidden" id="guest-player-card">
+      <div id="video-container"></div>
+      <div class="status" id="guest-status">Host ka intezaar...</div>
+      <div class="err hidden" id="guest-error"></div>
+      <div class="linkrow hidden" id="guest-error-actions" style="margin-top:10px;">
+        <button class="btn" id="btn-guest-retry">Retry</button>
+        <button class="btn danger" id="btn-guest-leave" style="margin-top:0;">Chhodo</button>
+      </div>
+      <div class="note" style="margin-top:10px;">Playback host control karta hai - uske play/pause/seek ke saath tumhara video apne aap sync rahega.</div>
+    </div>
+    <div id="log-guest"></div>
+  </div>
+</div>
+
+<script type="module">
+import {joinRoom} from './trystero-mqtt.js';
+
+const APP_ID = 'saathwatch-dv-v2';
+const RTC_CONFIG = {
+  iceServers: [
+    {urls: ['stun:stun.l.google.com:19302', 'stun:stun.relay.metered.ca:80']},
+    {urls: 'turn:global.relay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject'},
+    {urls: 'turn:global.relay.metered.ca:80?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject'},
+    {urls: 'turns:global.relay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject'}
+  ]
+};
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const CODE_KEY_RE = /^[A-HJ-NP-Z2-9]{6}-[A-HJ-NP-Z2-9]{12}$/;
+
+const $ = id => document.getElementById(id);
+const state = {mode: null, code: null, key: null, room: null, stream: null, peers: 0, timers: []};
+window.__sw = state;
+
+function log(screen, msg) {
+  const el = $(screen === 'host' ? 'log-host' : 'log-guest');
+  if (el) {
+    const line = document.createElement('div');
+    line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+    el.prepend(line);
+  }
+  console.log('[SaathWatch]', msg);
+}
+function genCode(n) {
+  let c = '';
+  const arr = new Uint8Array(n);
+  crypto.getRandomValues(arr);
+  for (const b of arr) c += CODE_ALPHABET[b % CODE_ALPHABET.length];
+  return c;
+}
+/* Safe status setters: textContent only, never innerHTML with dynamic data */
+function setStatus(id, text) { const el = $(id); el.textContent = ''; el.append(text); }
+function setStatusParts(id, parts) {
+  const el = $(id); el.textContent = '';
+  for (const p of parts) {
+    if (typeof p === 'string') el.append(p);
+    else { const b = document.createElement('b'); b.textContent = p.b; el.append(b); }
+  }
+}
+function showErr(id, msg) { const el = $(id); el.textContent = msg; el.classList.remove('hidden'); }
+function hideErr(id) { $(id).classList.add('hidden'); }
+function addTimer(t) { state.timers.push(t); return t; }
+function clearTimers() { for (const t of state.timers) { clearTimeout(t); clearInterval(t); } state.timers = []; }
+
+function fmtSize(b) {
+  if (b > 1e9) return (b / 1e9).toFixed(1) + ' GB';
+  if (b > 1e6) return (b / 1e6).toFixed(0) + ' MB';
+  return (b / 1e3).toFixed(0) + ' KB';
+}
+
+function resetToHome() {
+  clearTimers();
+  if (state.room) { try { state.room.leave(); } catch {} }
+  if (state.stream) { try { state.stream.getTracks().forEach(t => t.stop()); } catch {} }
+  const hv = $('host-video');
+  hv.pause(); if (hv.src) { URL.revokeObjectURL(hv.src); hv.removeAttribute('src'); hv.load(); }
+  state.mode = null; state.code = null; state.key = null; state.room = null; state.stream = null; state.peers = 0;
+  window.__sw.video = null;
+  $('video-container').textContent = '';
+  $('screen-host').classList.add('hidden');
+  $('screen-guest').classList.add('hidden');
+  $('guest-player-card').classList.add('hidden');
+  $('guest-entry').classList.remove('hidden');
+  hideErr('guest-error'); hideErr('guest-join-error');
+  $('guest-error-actions').classList.add('hidden');
+  $('screen-home').classList.remove('hidden');
+}
+
+/* ---------------- HOST ---------------- */
+
+async function startHost(file) {
+  if (state.mode === 'host') return;
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (['mkv', 'avi', 'flv', 'wmv', 'ts'].includes(ext)) {
+    alert('Ye file browser mein nahi chal sakti (.' + ext + ').\n\nMP4 (.mp4) wali file chuno - zyada tar phone videos MP4 hi hoti hain.\nMKV anime ke liye ye version abhi support nahi karta.');
+    return;
+  }
+  const v = $('host-video');
+  if (typeof v.captureStream !== 'function') {
+    alert('Tumhara browser video streaming support nahi karta (captureStream missing).\n\nChrome 62 ya uske baad ka version chahiye - Play Store se Chrome update karke dobara try karo.');
+    return;
+  }
+  state.mode = 'host';
+  $('screen-home').classList.add('hidden');
+  $('screen-host').classList.remove('hidden');
+
+  state.code = genCode(6);
+  state.key = genCode(12);
+  $('host-code').textContent = state.code + '-' + state.key;
+  const link = location.origin + location.pathname + '#/join/' + state.code + '-' + state.key;
+  $('btn-copy').onclick = async () => {
+    try { await navigator.clipboard.writeText(link); $('btn-copy').lastChild.textContent = ' Copied!'; }
+    catch { prompt('Link copy karo:', link); }
+  };
+  $('btn-wa').href = 'https://wa.me/?text=' + encodeURIComponent('SaathWatch pe movie dekh mere saath! Ye link kholo: ' + link);
+
+  v.src = URL.createObjectURL(file);
+  v.addEventListener('error', () => {
+    setStatus('host-status', 'Video decode nahi ho paya - file corrupt ya unsupported codec hai. MP4 (H.264) file try karo.');
+    log('host', 'Video decode error');
+  }, {once: true});
+
+  const room = joinRoom({appId: APP_ID, password: state.key, rtcConfig: RTC_CONFIG}, state.code);
+  state.room = room;
+  const [sendCtrl] = room.makeAction('ctrl');
+  const [, onHello] = room.makeAction('hello');
+  const [sendHello] = room.makeAction('hello');
+  window.__sw.sendCtrl = sendCtrl;
+
+  const sentTo = new Set();
+  const sendStream = peerId => {
+    if (sentTo.has(peerId)) return;
+    sentTo.add(peerId);
+    if (!state.stream) {
+      try {
+        state.stream = v.captureStream();
+        if (!state.stream || state.stream.getVideoTracks().length === 0) {
+          setStatus('host-status', 'Stream capture fail hua (zero tracks) - dobara try karo.');
+          log('host', 'captureStream returned zero video tracks');
+          return;
+        }
+        log('host', 'Capture OK: video tracks=' + state.stream.getVideoTracks().length + ', audio tracks=' + state.stream.getAudioTracks().length);
+        if (state.stream.getAudioTracks().length === 0) {
+          log('host', 'WARN: audio track nahi mila - viewer ko awaaz nahi aayegi');
+        }
+      } catch (e) {
+        setStatus('host-status', 'Stream capture fail hua: ' + e.message);
+        log('host', 'captureStream error: ' + e.message);
+        return;
+      }
+    }
+    try { room.addStream(state.stream, peerId); log('host', 'Stream bheji -> ' + peerId.slice(0, 6)); }
+    catch (e) { log('host', 'addStream error: ' + e.message); }
+  };
+
+  room.onPeerJoin(peerId => {
+    state.peers++;
+    log('host', 'Viewer join kiya: ' + peerId.slice(0, 6));
+    setStatusParts('host-status', [{b: String(state.peers) + ' viewer'}, ' dekh raha hai - ', {b: file.name}, ' (' + fmtSize(file.size) + ')']);
+    sendStream(peerId);
+  });
+  room.onPeerLeave(() => {
+    state.peers = Math.max(0, state.peers - 1);
+    log('host', 'Viewer chala gaya');
+    if (state.peers) setStatusParts('host-status', [{b: String(state.peers) + ' viewer'}, ' abhi bhi juda hai']);
+    else setStatus('host-status', 'Viewer chala gaya - link wapas share karke bula sakte ho.');
+  });
+  onHello((d, peerId) => sendStream(peerId));
+
+  const sendState = () => sendCtrl({paused: v.paused, time: v.currentTime, rate: v.playbackRate, at: Date.now()});
+  v.addEventListener('play', sendState);
+  v.addEventListener('pause', sendState);
+  v.addEventListener('seeked', sendState);
+  addTimer(setInterval(() => { if (!v.paused) sendState(); }, 5000));
+
+  setStatusParts('host-status', ['Room ready. Link share karo. ', {b: file.name}, ' (' + fmtSize(file.size) + ')']);
+  log('host', 'Room ' + state.code + ' ready, waiting for viewers');
+  addTimer(setTimeout(() => {
+    if (state.peers === 0 && state.mode === 'host') {
+      setStatus('host-status', 'Abhi tak koi nahi juda - link dobara bhejo, ya guest ko bolо page refresh karke phir khole.');
+    }
+  }, 90000));
+
+  $('btn-leave-host').onclick = () => { resetToHome(); };
+
+  try {
+    await navigator.wakeLock.request('screen');
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible') { try { await navigator.wakeLock.request('screen'); } catch {} }
+    });
+    log('host', 'Wake lock on');
+  } catch { log('host', 'Wake lock nahi mila - screen on rakhna'); }
+}
+
+/* ---------------- GUEST ---------------- */
+
+function parseCodeKey(raw) {
+  const cleaned = (raw || '').toUpperCase().trim().replace(/\s+/g, '');
+  return CODE_KEY_RE.test(cleaned) ? cleaned : null;
+}
+
+function guestFail(msg) {
+  showErr('guest-error', msg);
+  $('guest-error-actions').classList.remove('hidden');
+  log('guest', 'FAIL: ' + msg);
+}
+
+function startGuest(codeKey) {
+  const parsed = parseCodeKey(codeKey);
+  if (!parsed) {
+    showErr('guest-join-error', 'Poora code-key daalo - 6 letters, dash, phir 12 letters (jaise AB12CD-EF34GH56JK78). Sirf chhota code kaafi nahi hai.');
+    return;
+  }
+  const [code, key] = parsed.split('-');
+  state.mode = 'guest';
+  state.code = code;
+  state.key = key;
+  $('screen-home').classList.add('hidden');
+  $('screen-guest').classList.remove('hidden');
+  $('guest-entry').classList.add('hidden');
+  $('guest-player-card').classList.remove('hidden');
+  hideErr('guest-error');
+  $('guest-error-actions').classList.add('hidden');
+
+  let room;
+  try {
+    room = joinRoom({appId: APP_ID, password: key, rtcConfig: RTC_CONFIG}, code);
+  } catch (e) {
+    guestFail('Room mein jud nahi paye: ' + e.message);
+    return;
+  }
+  state.room = room;
+  setStatusParts('guest-status', ['Room ', {b: code}, ' mein host dhoondh rahe...']);
+  log('guest', 'Joined room ' + code);
+
+  addTimer(setTimeout(() => {
+    if (state.mode === 'guest' && !window.__sw.video) {
+      guestFail('25 second mein host nahi mila. Link/code-key sahi hai? Host ka tab khula hai? Retry dabao.');
+    }
+  }, 25000));
+
+  const [sendHello] = room.makeAction('hello');
+  const [, onCtrl] = room.makeAction('ctrl');
+  let streamHandled = false;
+
+  room.onPeerJoin(peerId => {
+    log('guest', 'Peer mila: ' + peerId.slice(0, 6));
+    sendHello({}, peerId);
+    setStatus('guest-status', 'Host mil gaya - stream connect ho rahi hai...');
+  });
+  room.onPeerLeave(() => {
+    if (state.mode !== 'guest') return;
+    guestFail('Host chala gaya - stream ruk gayi. Host wapas aaye toh Retry dabao.');
+  });
+
+  room.onPeerStream(stream => {
+    if (streamHandled) return;
+    streamHandled = true;
+    log('guest', 'Stream mili! tracks=' + stream.getTracks().length);
+    const container = $('video-container');
+    container.textContent = '';
+    const video = document.createElement('video');
+    video.controls = true;
+    video.playsInline = true;
+    video.srcObject = stream;
+    container.appendChild(video);
+    window.__sw.video = video;
+    stream.getTracks().forEach(t => t.addEventListener('ended', () => {
+      if (state.mode === 'guest') guestFail('Stream band ho gayi (track ended). Retry dabao.');
+    }));
+    video.addEventListener('error', () => {
+      guestFail('Video decode error aaya guest phone pe.');
+    });
+    video.addEventListener('waiting', () => { if (state.mode === 'guest') setStatus('guest-status', 'Buffer ho raha hai...'); });
+    video.addEventListener('playing', () => { if (state.mode === 'guest') setStatus('guest-status', 'Live! Host ke saath synced.'); });
+    setStatus('guest-status', 'Stream mil gayi - start ho rahi hai...');
+    video.play().catch(() => setStatus('guest-status', 'Play dabao (browser ne autoplay roka)'));
+  });
+
+  onCtrl(s => {
+    const video = window.__sw.video;
+    if (s.paused) {
+      if (video && !video.paused) video.pause();
+      if (state.mode === 'guest') setStatus('guest-status', 'Host ne pause kiya hai');
+    } else if (video && video.paused) {
+      video.play().catch(() => {});
+    }
+  });
+
+  $('btn-guest-retry').onclick = () => {
+    hideErr('guest-error');
+    $('guest-error-actions').classList.add('hidden');
+    if (state.room) { try { state.room.leave(); } catch {} }
+    clearTimers();
+    window.__sw.video = null;
+    $('video-container').textContent = '';
+    state.room = null;
+    startGuest(parsed);
+  };
+  $('btn-guest-leave').onclick = () => { resetToHome(); };
+}
+
+/* ---------------- UI wiring ---------------- */
+
+$('btn-host').onclick = () => $('file-input').click();
+$('file-input').onchange = e => {
+  const f = e.target.files[0];
+  if (f) startHost(f);
+};
+$('btn-join').onclick = () => {
+  $('screen-home').classList.add('hidden');
+  $('screen-guest').classList.remove('hidden');
+  $('code-input').focus();
+};
+$('btn-join-go').onclick = () => {
+  hideErr('guest-join-error');
+  const c = $('code-input').value.trim();
+  if (c) startGuest(c);
+  else showErr('guest-join-error', 'Poora code-key daalo (6 letters - 12 letters).');
+};
+$('code-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-join-go').click(); });
+
+if (location.hash.startsWith('#/join/')) {
+  const c = location.hash.slice(7);
+  if (parseCodeKey(c)) startGuest(c);
+  else if (c) {
+    $('screen-home').classList.add('hidden');
+    $('screen-guest').classList.remove('hidden');
+    showErr('guest-join-error', 'Link adhoora lag raha hai - host se poora link maango (code-key ke saath).');
+  }
+}
+</script>
+</body>
+</html>
